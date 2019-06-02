@@ -3,6 +3,7 @@
 
 配置文件 work_wechat.cfg.sample
 * mv work_wechat.cfg.sample work_wechat.cfg
+
 配置文件内容：
  
 #企业微信配置
