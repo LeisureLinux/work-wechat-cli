@@ -2,7 +2,7 @@
 # #####################################################
 # Last modified by: Albert Xu <axu@yj777.cn>
 # QQ/WeChat: 8122093
-# Last modify date: June 2 2019  
+# Last modify date: June 5 2019  
 # Shanghai Young Jack Network Technology (上海甬洁网络)
 # #####################################################
 URL_GET_TOKEN="https://qyapi.weixin.qq.com/cgi-bin/gettoken"
@@ -27,21 +27,23 @@ gen_token () {
 	expire_time=0
 	now=$(date +"%s")
 	if [ -s ${TOKEN_FILE} ] ; then
-		# Token 有效期固定为 7200s = 2小时,为安全设置100秒的提前过期
-		expire_time=$(expr $(stat -c %Y ${TOKEN_FILE}) + 7100 )
-	fi
-	if [ ${now} -lt ${expire_time} ]; then
-		echo "使用缓冲的 Token, 过期时间： $(date -d @$expire_time)"
-		TOKEN=$(cat ${TOKEN_FILE})
-		return
+		expire_time=$(awk -F'|' '{print $2}' ${TOKEN_FILE})
+		if [ ${now} -lt ${expire_time} ]; then
+			echo "使用缓冲的 Token, 过期时间： $(date -d @$expire_time)"
+			TOKEN=$(awk -F'|' '{print $1}' ${TOKEN_FILE})
+			return
+		fi
 	fi
 	# 已过期，生成新的 Token
-	TOKEN=$(curl -s "$URL_GET_TOKEN?corpid=$CORP_ID&corpsecret=$SECRET"|jq -r .access_token)
+	T=$(curl -s "$URL_GET_TOKEN?corpid=$CORP_ID&corpsecret=$SECRET")
+	TOKEN=$(echo $T|jq -r .access_token)
 	if [ -z ${TOKEN} ]; then
 	    echo "Get token error, maybe network issue"
 	    exit 100
 	fi
-	echo $TOKEN > ${TOKEN_FILE}
+	EXP=$(echo $T|jq -r .expires_in)
+	EXP=$(expr $now + $EXP)
+	echo "$TOKEN|$EXP" > ${TOKEN_FILE}
 }
 
 

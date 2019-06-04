@@ -22,6 +22,7 @@ ToUser=
 企业微信官方 API 文档： https://work.weixin.qq.com/api/doc
 
 # 增加了 Token 缓冲
+Token 根据 expires_in （根据文档此值不一定为 7200s）,自动调整而不再根据写 token 文件时间
 # 增加了发送消息的管道输入
 # 
 
